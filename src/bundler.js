@@ -5,7 +5,7 @@ const { parse } = require(`luauparse`);
 const formatter  = require('luauformatter');
 
 const REPO = `https://github.com/swiftdev/luaubundler`;
-const VERSION = `v1.0.9`
+const VERSION = `v1.1.1`
 
 //                 -- return (__modules[module] and (function () __cache[module] = __modules[module](); return __cache[module] end) ()) or (function () if __debug then error("Missing module " .. module) end end)()
 class Bundler {
@@ -50,7 +50,7 @@ class Bundler {
     }
     
     static clean(raw) {
-        return raw.replace(/[^a-zA-Z0-9/.@]/g, '')
+        return raw.replace(/[^a-zA-Z0-9/.@\\]/g, '')
     }
 
     resolve(dir, fp) {
@@ -106,9 +106,10 @@ class Bundler {
 
                 for (const _path of paths) {
                     if(fs.existsSync(path.resolve(dir, _path)) && fs.statSync(path.resolve(dir, _path)).isFile()) 
+                        // console.log(path.relative(this.dir, path.resolve(dir, _path)))
                         return { 
                             resolved: path.resolve(dir, _path),
-                            req: dir.split('\\')[dir.split('\\').length - 1] + '/' + nfile
+                            req: Bundler.clean(path.relative(this.dir, path.resolve(dir, _path))).replaceAll(`\\`, '/').replace(/\.(lua|luau)$/g, '')
                         }
                 }
             } catch (error) {

@@ -1,4 +1,4 @@
-# Luaubundler | v1.1.0
+# Luaubundler | v1.1.1
 Thank you all for using this package, if you have any suggestions, please contact me through discord.
 
 ### Command line arguments
@@ -19,7 +19,7 @@ Thank you all for using this package, if you have any suggestions, please contac
 ```
 ### Fixes
 ```
-[+] - Fixed issues with relative imports
+[+] - Fixed issues with relative imports when requiring more than 1 dirs above 
 ```
 
 ## Contact 
