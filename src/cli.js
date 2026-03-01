@@ -65,7 +65,7 @@ const process  = require('process');
             name = name.replace(/\.(lua|luau)$/g, '')
         })()
 
-        const bundler = new Bundler(input, true, args, name, path.dirname(input));
+        const bundler = new Bundler(input, true, args, {old: name, new: name}, path.dirname(input));
         const res     = await bundler.bundle();
 
         // console.log(res);

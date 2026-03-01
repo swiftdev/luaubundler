@@ -1,4 +1,4 @@
-# Luaubundler | v1.0.9
+# Luaubundler | v1.1.0
 Thank you all for using this package, if you have any suggestions, please contact me through discord.
 
 ### Command line arguments
@@ -15,11 +15,11 @@ Thank you all for using this package, if you have any suggestions, please contac
 ## Changelog
 ### Added 
 ```
-[+] - Added cache 
+[+] - Nothing 
 ```
 ### Fixes
 ```
-[+] - Fixed circular dependencies, preventing stack overflow 
+[+] - Fixed issues with relative imports
 ```
 
 ## Contact 

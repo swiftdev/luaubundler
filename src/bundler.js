@@ -77,7 +77,10 @@ class Bundler {
 
         for(const _path of paths) {
             if(fs.existsSync(path.resolve(dir, _path)) && fs.statSync(path.resolve(dir, _path)).isFile()) 
-                return path.resolve(dir, _path)
+                return {
+                    resolved: path.resolve(dir, _path),
+                    req: fp 
+                }
         }
         
         if(file.startsWith(`.`)) {
@@ -103,7 +106,10 @@ class Bundler {
 
                 for (const _path of paths) {
                     if(fs.existsSync(path.resolve(dir, _path)) && fs.statSync(path.resolve(dir, _path)).isFile()) 
-                        return path.resolve(dir, _path)
+                        return { 
+                            resolved: path.resolve(dir, _path),
+                            req: dir.split('\\')[dir.split('\\').length - 1] + '/' + nfile
+                        }
                 }
             } catch (error) {
                 console.error(error)
@@ -213,18 +219,20 @@ class Bundler {
         // code = this.rewrite(code)
 
         // Bundler.modules.set(module, code);
-        Bundler.modules.set(this.name, code);
         // const base = path.dirname(this.path);
         
-        for(const req of this.requires) {
+        for(const current of this.requires) {
             // const mod = req.startsWith('@') ? req.slice(1) : req 
-            const resolved = this.resolve(this.dir, req);
+            const { resolved, req } = this.resolve(this.dir, current);
+            code = code.replaceAll(current, req)
 
             if(!resolved)
                 console.error(`failed to resolve ${req}`)
 
-            await (new Bundler(resolved, false, this.args, req, this.dir)).bundle()
+            await (new Bundler(resolved, false, this.args, {old: current, new: req}, this.dir)).bundle()
         }
+
+        Bundler.modules.set(this.name.new, code);
 
         if(this.root)
             return this.final()
@@ -246,7 +254,7 @@ class Bundler {
             `
         }
 
-        output += `__require("${this.name}")\n`
+        output += `__require("${this.name.new}")\n`
         
         fs.writeFileSync(`./output.luau`, output, 'utf-8')
 
