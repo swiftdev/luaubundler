@@ -271,8 +271,8 @@ class Bundler {
 
     Output () {
         const ms          = (Date.now() - this.start).toFixed(2);
-        const date        = new Date();
-        const compilation = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()} ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`
+        const date        = new Date(Date.now());
+        const compilation = date.toLocaleString()
 
         let output = fs.readFileSync(`./src/module/code.luau`, 'utf-8'); 
         output = this.CompMacro(output, ms, compilation)

@@ -6,7 +6,8 @@
     "luabundler",
     "bundler",
     "luau",
-    "luaubundler"
+    "luaubundler",
+    "macros"
   ],
   "homepage": "https://github.com/swiftdev/luaubundler#readme",
   "bugs": {
@@ -24,7 +25,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "luaubundler": "./cli.js"
+    "luaubundler": "./src/cli.js"
   },
   "dependencies": {
     "luauformatter": "^1.0.1",

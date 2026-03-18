@@ -2,8 +2,8 @@
 	Bundled using Luaubundler v1.1.2
 	Github repo: https://github.com/swiftdev/luaubundler
 	Discord: https://discord.gg/2aNwJ66MVE
-	Build date: 17/2/2026 21:38:55
-	Time taken: 6.00ms
+	Build date: 18/03/2026, 19:48:07
+	Time taken: 5.00ms
 --]]
 
 local LBN_MODULES = {}; 
@@ -47,13 +47,13 @@ LBN_MODULES["utils/stats"] = function ()
 	return util;
 end
 LBN_MODULES["Main"] = function ()
-    --// Showcase of all macros.
+                --// Showcase of all macros.
 	if false then
 		print("Currently in debug mode!")
 	else
 		print("Currently not in debug mode!")
 	end
-	print("This file was bundled in " .. 6.00 .. "ms using luaubundler " .. 'v1.1.2' .. " at " .. '17/2/2026 21:38:55');
+	print("This file was bundled in " .. 5.00 .. "ms using luaubundler " .. 'v1.1.2' .. " at " .. '18/03/2026, 19:48:07');
 	print("Within the module " .. 'Main')
 	print("The absolute path of this module is " .. 'C:\\Users\\swift\\Desktop\\projects\\node.js\\luaubundler\\example\\Main.luau')
 	print("Total number of modules registered: " .. 3)

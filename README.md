@@ -1,4 +1,4 @@
-# Luaubundler | v1.1.2
+# Luaubundler | v1.1.3
 Thank you all for using this package, if you have any suggestions, please contact me through discord.
 
 ### Command line arguments
@@ -15,12 +15,11 @@ Thank you all for using this package, if you have any suggestions, please contac
 ## Changelog
 ### Added 
 ```
-[+] - Macros have been implemented!
-[+] - Added documentation site 
+[+] - Nothing, this is more like an addon to v1.1.2, please view v1.1.2 changelogs.
 ```
 ### Fixes
 ```
-[=] - Fixed issues with relative imports 
+[=] - Fixed date errors 
 ```
 
 ## Documentation
