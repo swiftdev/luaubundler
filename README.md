@@ -1,5 +1,5 @@
-# Luaubundler | v1.1.3
-Thank you all for using this package, if you have any suggestions, please contact me through discord.
+# Luaubundler | v1.1.4
+Thank you all for using this package, if you have any suggestions or errors, [Click this](https://discord.gg/2aNwJ66MVE) to contact me through the discord server.
 
 ### Command line arguments
 ```
@@ -15,11 +15,20 @@ Thank you all for using this package, if you have any suggestions, please contac
 ## Changelog
 ### Added 
 ```
-[+] - Nothing, this is more like an addon to v1.1.2, please view v1.1.2 changelogs.
+[+] - Added 3 new macros
+    [+] - LBN_READ_FILE 
+    [+] - LBN_DEBUG_GUARD
+    [+] - LBN_DEBUG_GUARD_END 
 ```
+
 ### Fixes
 ```
-[=] - Fixed date errors 
+[=] - Fixed converting array to non key-value table errors for LBN_LOAD_JSON including:
+    [=] - tables within a table 
+    [=] - strings within a table 
+    [=] - numbers within a table 
+    [=] - etc 
+[=] - Restored the documentation website
 ```
 
 ## Documentation

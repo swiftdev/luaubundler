@@ -7,44 +7,23 @@ require('dotenv').config({ path: `./.env` });
 const { VERSION, REPO } = process.env;
 
 class Bundler {
+    // macro information has been moved to macros.md 
     static macros = {
         "variables": [
-            // variable | boolean: if the bundled file was bundled in debug mode 
             "LBN_DEBUG",
-
-            // variable | string: the build date of the bundled file | format DD/MM/YYYY HH:mm:SS
             "LBN_BUILD_DATE", 
-            
-            // variable | string: the identifier of the file being bundled
             "LBN_MODULE_NAME",
-
-            // variable | number: time in milliseconds it took to bundle 
             "LBN_TIME", 
-
-            // variable | string: the absolute path on disk of a module this identifier is in
             "LBN_SOURCE", 
-
-            // variable | string: the version of this luaubundler 
             "LBN_VERSION", 
-
-            // variable | number: the amount of modules that have been bundled 
             "LBN_MODULE_COUNT", 
         ], 
 
         "functions": [
-            // Array of strings: similar to fs.readdirSync, lists the files under a certain directory. Can be module path e.g "Features/" or relative path e.g "./Features"
-            // function parameters: directory <required> <string>, includesubdir <optional, default: false> <boolean>, includextension <optional, default : false>. e.g LBN_LSDIR("Utilities", true)
-            // includesubdir: include not just files, but directories too.
-            // includextension: include in a file's string the extension if true "Aim.luau" would transform to "Aim"
             "LBN_LSDIR", 
-
-            // table: returns a table with the loaded json object. converts .json file into luau table 
-            // function parameters: directory <required> <string> e.g LBN_LOAD_JSON("./data.json")
             "LBN_LOAD_JSON",
-
-            // table: returns a table of required modules. imports all .luau/.lua files from a directory.
-            // function parameters: directory <required> <string> e.g LBN_IMPORT_ALL("Modules") 
-            "LBN_IMPORT_ALL"
+            "LBN_IMPORT_ALL",
+            "LBN_READ_FILE"
         ]
     }
 
@@ -73,9 +52,66 @@ class Bundler {
     static modules = new Map();
     static visited = new Set();
 
-    CompMacro(src, ms, compilation) {
+    CompMacro(src, ms, compilation, name=null) {
         function re(str) {
             return new RegExp(`\\b${str}\\b`, "g");
+        }
+
+        if(!this.args.includes('-d')) {
+            let lines = src.split('\n');
+            let depth   = 0; 
+
+            const startr = /LBN_DEBUG_GUARD\s*\(\s*\)/;
+            const endr   = /LBN_DEBUG_GUARD_END\s*\(\s*\)/;
+
+            const arr = {
+                ['start']: [],
+                ['end']  : [] 
+            }
+
+            for(const [index, line] of lines.entries()) {
+                if(line.search(startr) !== -1) {
+                    ++depth 
+
+                    arr['start'].push(index); 
+                } else if (line.search(endr) !== -1) {
+                    --depth
+
+                    arr['end'].push(index)
+                }
+            }
+
+            if (depth !== 0 || arr['start'].length !== arr['end'].length) {
+                console.error(`[Error]: missing \`LBN_DEBUG_GUARD_END()\` or inaccuracies between the amount of guards and guard ends from ${name}`)
+                return process.exit()
+            }
+
+            const zones = []; 
+            for(let i = 0; i < arr['start'].length; ++i) {
+                zones.push({
+                    start: arr['start'][i], 
+                    end  : arr['end'][arr['end'].length - 1 - i]
+                })
+            }
+
+            lines = lines.filter((line, index) => {
+                let bool = true; 
+
+                for(const zone of zones) {
+                    if(index >= zone.start && index <= zone.end)
+                        bool = false 
+                }
+
+                return bool; 
+            })
+
+            src = lines.join('\n'); 
+        } else {
+            const startr = /LBN_DEBUG_GUARD\s*\(\s*\)/g;
+            const endr   = /LBN_DEBUG_GUARD_END\s*\(\s*\)/g;
+
+            src = src.replaceAll(startr, '')
+            src = src.replaceAll(endr, '')
         }
 
         return src
@@ -93,6 +129,33 @@ class Bundler {
         return raw.replaceAll(`\\`, '/').replace(/\.(lua|luau)$/g, '')
     }
 
+    ConstructArray(value) {
+        switch(typeof value) {
+            case "number":
+                return value 
+            case "string":
+                return `'${value}'`
+            case "object": 
+                if(Array.isArray(value)) {
+                    const entries = Object.entries(value);
+
+                    const data    = entries.map(([_, value]) => {
+                        return this.ConstructArray(value)
+                    }) 
+
+                    return `{ ${data.join(', ')} }`; 
+                } else {
+                    const entries = Object.entries(value);
+
+                    const data    = entries.map(([key, value]) => {
+                        return this.ConstructJson(key, value)
+                    })
+
+                    return `['${key}'] = { ${data.join(',\n\t')} }`
+                }
+        }
+    }
+
     ConstructJson(key, value) {
         switch(typeof value) {
             case "number":
@@ -101,7 +164,7 @@ class Bundler {
                 return `\n\t['${key}'] = '${value}',`
             case "object":
                 if(Array.isArray(value)) {
-                    return `\n\t['${key}'] = {${value.join(', ')}}`
+                    return `['${key}'] = ${this.ConstructArray(value)}`
                 } else {
                     const entries = Object.entries(value);
 
@@ -208,6 +271,29 @@ class Bundler {
 
                         this.code = this.code.replace(pattern, output)
                     }
+                } else if (name === "LBN_READ_FILE") {
+                    const params = node.arguments; 
+                    const file   = params[0].value; 
+
+                    if(!file)
+                        return console.error(`Error in module ${this.name}, expected params for function: LBN_READ_FILE, got nothing.`)
+
+                    const { Resolved: resolved } = this.utils.path.Resolve(this.dir, file, false);
+
+                    if(fs.existsSync(resolved) && fs.statSync(resolved).isFile()) {
+                        const data = fs.readFileSync(resolved, 'utf-8');
+
+                        if(!data)
+                            return console.error(`Error reading data from ${resolved}`)
+                        
+                        console.log(data)
+                        const pattern = new RegExp(
+                            `LBN_READ_FILE\\s*\\(\\s*${params[0].raw}` +
+                            `\\s*\\)`                                                   
+                        );
+
+                        this.code = this.code.replace(pattern, `[[\n\t${data}\n]]`)
+                    }
                 }
 
             case "Identifier":
@@ -275,10 +361,10 @@ class Bundler {
         const compilation = date.toLocaleString()
 
         let output = fs.readFileSync(`./src/module/code.luau`, 'utf-8'); 
-        output = this.CompMacro(output, ms, compilation)
+        output = this.CompMacro(output, ms, compilation, this.name['new'])
 
         for (let [name, src] of Bundler.modules.entries()) {
-            src = this.CompMacro(src, ms, compilation)
+            src = this.CompMacro(src, ms, compilation, name)
             output += `
             LBN_MODULES["${name}"] = function ()
                 ${src}
