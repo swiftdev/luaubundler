@@ -19,6 +19,7 @@ Thank you all for using this package, if you have any suggestions or errors, [Cl
     [+] - LBN_READ_FILE 
     [+] - LBN_DEBUG_GUARD
     [+] - LBN_DEBUG_GUARD_END 
+[+] - Added seperate .md file for macro information
 ```
 
 ### Fixes
