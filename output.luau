@@ -1,9 +1,9 @@
 --[[
-	Bundled using Luaubundler v1.1.4
+	Bundled using Luaubundler v1.1.5
 	Github repo: https://github.com/swiftdev/luaubundler
 	Discord: https://discord.gg/2aNwJ66MVE
-	Build date: 21/03/2026, 15:22:58
-	Time taken: 6.00ms
+	Build date: 23/03/2026, 18:37:30
+	Time taken: 5.00ms
 --]]
 
 local LBN_MODULES = {}; 
@@ -47,46 +47,10 @@ LBN_MODULES["utils/stats"] = function ()
 	return util;
 end
 LBN_MODULES["Main"] = function ()
-                --// Showcase of all macros.
-	if true then
-		print("Currently in debug mode!")
-	else
-		print("Currently not in debug mode!")
-	end
-	print("This file was bundled in " .. 6.00 .. "ms using luaubundler " .. 'v1.1.4' .. " at " .. '21/03/2026, 15:22:58');
-	print("Within the module " .. 'Main')
-	print("The absolute path of this module is " .. 'C:\\Users\\swift\\Desktop\\projects\\node.js\\luaubundler\\example\\Main.luau')
-	print("Total number of modules registered: " .. 3)
-	print("The files under the utility directory will be output below.")
-	for i, v in {
-		'print',
-		'stats'
-	} do
-		print(i, v)
-	end
-	print('===========================================================')
-	local json = {
-		['a'] = 5,
-		['j'] = {
-			{
-				'hi'
-			},
-			'4',
-			'hello world!',
-			5
-		}
-	};
-	local text = [[
-	hello world!
-]];
-	print(text)
-	print("The key `a` in the json file's value is: " .. json.a)
-	local utils = {
+	local mods = {
 		['print'] = LBN_REQUIRE('utils/print'),
 		['stats'] = LBN_REQUIRE('utils/stats'),
 	};
-	utils.stats:info()
-	print("Out of the scope of the debug guard")
-	print("2/2")
+	mods['print']:hello()
 end
 LBN_REQUIRE("Main")

@@ -3,7 +3,7 @@ const { path, ast }     = require('./utils');
 const formatter         = require('luauformatter')
 const Path              = require('path')
 
-require('dotenv').config({ path: `./.env` }); 
+require('dotenv').config({ path: `./.env`, quiet: true }); 
 const { VERSION, REPO } = process.env;
 
 class Bundler {
@@ -57,6 +57,15 @@ class Bundler {
             return new RegExp(`\\b${str}\\b`, "g");
         }
 
+        return src
+        .replaceAll(re("LBN_TIME"), ms)
+        .replaceAll(re("LBN_BUILD_DATE"), `'${compilation}'`)
+        .replaceAll(re("LBN_MODULE_COUNT"), Bundler.modules.size)
+        .replaceAll(re("LBN_DEBUG"), this.args.includes('-d') ? `true` : `false`)
+    }
+
+    async PreMacro() {
+        let src = this.code; 
         if(!this.args.includes('-d')) {
             let lines = src.split('\n');
             let depth   = 0; 
@@ -82,7 +91,7 @@ class Bundler {
             }
 
             if (depth !== 0 || arr['start'].length !== arr['end'].length) {
-                console.error(`[Error]: missing \`LBN_DEBUG_GUARD_END()\` or inaccuracies between the amount of guards and guard ends from ${name}`)
+                console.error(`[Error]: missing \`LBN_DEBUG_GUARD_END()\` or inaccuracies between the amount of guards and guard ends from ${this.name['new']}`)
                 return process.exit()
             }
 
@@ -107,18 +116,14 @@ class Bundler {
 
             src = lines.join('\n'); 
         } else {
-            const startr = /LBN_DEBUG_GUARD\s*\(\s*\)/g;
-            const endr   = /LBN_DEBUG_GUARD_END\s*\(\s*\)/g;
+            const startr = /^\s*LBN_DEBUG_GUARD\s*\(\s*\)\s*.*\n?/gm;
+            const endr   = /^\s*LBN_DEBUG_GUARD_END\s*\(\s*\)\s*.*\n?/gm;
 
-            src = src.replaceAll(startr, '')
-            src = src.replaceAll(endr, '')
+            src = src.replace(startr, '');
+            src = src.replace(endr, '');
         }
 
-        return src
-        .replaceAll(re("LBN_TIME"), ms)
-        .replaceAll(re("LBN_BUILD_DATE"), `'${compilation}'`)
-        .replaceAll(re("LBN_MODULE_COUNT"), Bundler.modules.size)
-        .replaceAll(re("LBN_DEBUG"), this.args.includes('-d') ? `true` : `false`)
+        this.code = src;
     }
 
     static Clean(raw) {
@@ -286,7 +291,6 @@ class Bundler {
                         if(!data)
                             return console.error(`Error reading data from ${resolved}`)
                         
-                        console.log(data)
                         const pattern = new RegExp(
                             `LBN_READ_FILE\\s*\\(\\s*${params[0].raw}` +
                             `\\s*\\)`                                                   
@@ -320,6 +324,9 @@ class Bundler {
         Bundler.visited.add(path)
 
         this.code = fs.readFileSync(path, 'utf-8')
+
+        await this.PreMacro();
+
         const ast = this.utils.ast.Parse(this.code);
 
         await this.utils.ast.Walk(ast);

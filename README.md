@@ -1,4 +1,4 @@
-# Luaubundler | v1.1.4
+# Luaubundler | v1.1.5
 Thank you all for using this package, if you have any suggestions or errors, [Click this](https://discord.gg/2aNwJ66MVE) to contact me through the discord server.
 
 ### Command line arguments
@@ -15,21 +15,15 @@ Thank you all for using this package, if you have any suggestions or errors, [Cl
 ## Changelog
 ### Added 
 ```
-[+] - Added 3 new macros
-    [+] - LBN_READ_FILE 
-    [+] - LBN_DEBUG_GUARD
-    [+] - LBN_DEBUG_GUARD_END 
-[+] - Added seperate .md file for macro information
+[+] - Nothing
 ```
 
 ### Fixes
 ```
-[=] - Fixed converting array to non key-value table errors for LBN_LOAD_JSON including:
-    [=] - tables within a table 
-    [=] - strings within a table 
-    [=] - numbers within a table 
-    [=] - etc 
-[=] - Restored the documentation website
+[=] - Fixed code remaining on the same line of the debug guard e.g when you add `;` to the end of the function call 
+[=] - Fixed modules being included while being in a non-debug mode while requiring a module within a debug guard 
+[=] - Removed the dotenv tip 
+[=] - Removed code being output (this was for debugging)
 ```
 
 ## Documentation
