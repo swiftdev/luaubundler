@@ -1,9 +1,9 @@
 --[[
-	Bundled using Luaubundler v1.1.5
+	Bundled using Luaubundler v1.1.6
 	Github repo: https://github.com/swiftdev/luaubundler
 	Discord: https://discord.gg/2aNwJ66MVE
-	Build date: 23/03/2026, 18:37:30
-	Time taken: 5.00ms
+	Build date: 31/03/2026, 21:25:25
+	Time taken: 2.00ms
 --]]
 
 local LBN_MODULES = {}; 
@@ -21,7 +21,7 @@ local LBN_REQUIRE = setmetatable({}, {
 		end
 		local mod = LBN_MODULES[module];
 		if not mod then
-			if true then
+			if false then
 				error("Missing module " .. module)
 			end
 			return nil;
@@ -32,25 +32,18 @@ local LBN_REQUIRE = setmetatable({}, {
 		return res;
 	end 
 });
-LBN_MODULES["utils/print"] = function ()
-	local util = {};
-	function util:hello ()
-		print("Hello!")
-	end
-	return util;
-end
-LBN_MODULES["utils/stats"] = function ()
-	local util = {};
-	function util:info()
-		print("Bundled using luaubundler")
-	end
-	return util;
-end
 LBN_MODULES["Main"] = function ()
-	local mods = {
-		['print'] = LBN_REQUIRE('utils/print'),
-		['stats'] = LBN_REQUIRE('utils/stats'),
-	};
-	mods['print']:hello()
+	local data = {
+		['AbsolutePath'] = 'C:\\Users\\swift\\Desktop\\projects\\node.js\\luaubundler\\example\\utils\\print.luau',
+		['RelativePath'] = 'utils\\print.luau',
+		['FileName'] = 'print.luau',
+		['Extension'] = 'luau',
+		['Size'] = 122,
+		['LastModified'] = 'Tue Mar 31 2026 21:08:43 GMT+0100 (British Summer Time)',
+		['Dependencies'] = {
+			'utils/print'
+		},
+	}
+	print(data);
 end
 LBN_REQUIRE("Main")

@@ -1,4 +1,4 @@
-# Luaubundler | v1.1.5
+# Luaubundler | v1.1.6
 Thank you all for using this package, if you have any suggestions or errors, [Click this](https://discord.gg/2aNwJ66MVE) to contact me through the discord server.
 
 ### Command line arguments
@@ -15,15 +15,23 @@ Thank you all for using this package, if you have any suggestions or errors, [Cl
 ## Changelog
 ### Added 
 ```
-[+] - Nothing
+[+] - Added new macro: 
+    [+] - LBN_METADATA - View macros.md or the gitbook for information 
+[+] - Added support for absolute path in require
+```
+
+### Updated 
+```
+[*] - Updated the gitbook 
+[*] - Updated macros information 
 ```
 
 ### Fixes
 ```
-[=] - Fixed code remaining on the same line of the debug guard e.g when you add `;` to the end of the function call 
-[=] - Fixed modules being included while being in a non-debug mode while requiring a module within a debug guard 
-[=] - Removed the dotenv tip 
-[=] - Removed code being output (this was for debugging)
+[=] - Fixed key is not defined error
+[=] - Fixed backslash being escaped in strings
+[=] - Fixed `tables` within a table not having a comma after
+[=] - Rewrote json-related logic 
 ```
 
 ## Documentation
@@ -39,13 +47,15 @@ Luamin: **https://github.com/herrtt/luamin.js**
 LuaParse: **https://github.com/fstirlitz/luaparse**
 
 ## License
-Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
+Shield: [![CC BY-NC-ND 4.0][cc-by-nc-nd-shield]][cc-by-nc-nd]
 
 This work is licensed under a
-[Creative Commons Attribution 4.0 International License][cc-by].
+[Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License][cc-by-nc-nd].
 
-[![CC BY 4.0][cc-by-image]][cc-by]
+[![CC BY-NC-ND 4.0][cc-by-nc-nd-image]][cc-by-nc-nd]
 
-[cc-by]: http://creativecommons.org/licenses/by/4.0/
-[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
-[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
+Additional clarification: This work may not be sold, sublicensed, included in paid products, or redistributed as part of a commercial package or asset bundle, whether modified or unmodified.
+
+[cc-by-nc-nd]: https://creativecommons.org/licenses/by-nc-nd/4.0/
+[cc-by-nc-nd-image]: https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png
+[cc-by-nc-nd-shield]: https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg

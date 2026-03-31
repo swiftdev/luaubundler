@@ -1,3 +1,5 @@
+local stats = require('./stats')
+
 local util = {};
 
 function util:hello ()

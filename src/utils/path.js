@@ -87,6 +87,13 @@ class PathUtil {
                     Name: filepath
                 };
         }
+
+        if(fs.existsSync(directory))
+            return {
+                Resolved: directory,
+                Directory: fs.statSync(directory).isDirectory(),
+                Name: PathUtil.Name(PathUtil.Clean(path.relative(this.dir, directory)))
+            }
     }
 }
 

@@ -9,7 +9,8 @@ const { VERSION, REPO } = process.env;
 class Bundler {
     // macro information has been moved to macros.md 
     static macros = {
-        "variables": [
+        "comptime": [
+            // variables 
             "LBN_DEBUG",
             "LBN_BUILD_DATE", 
             "LBN_MODULE_NAME",
@@ -17,13 +18,22 @@ class Bundler {
             "LBN_SOURCE", 
             "LBN_VERSION", 
             "LBN_MODULE_COUNT", 
-        ], 
+            // 
 
-        "functions": [
+            // functions 
             "LBN_LSDIR", 
             "LBN_LOAD_JSON",
             "LBN_IMPORT_ALL",
             "LBN_READ_FILE"
+            // 
+
+        ], 
+
+        "postcomp": [
+            // functions 
+            "LBN_METADATA"
+            // 
+
         ]
     }
 
@@ -126,6 +136,54 @@ class Bundler {
         this.code = src;
     }
 
+    async PostMacro(node, src) {
+        if(!node) return; 
+
+        const name   = node.base.name; 
+        const params = node?.arguments; 
+        switch(name) {
+            case "LBN_METADATA": 
+                let file; 
+                if (params.length === 0) 
+                    file = this.path; 
+                else {
+                    file = this.utils.path.Resolve(this.dir, params[0].value)
+                }
+                
+                let dependencies = [...Bundler.modules.entries()].find(([name, data]) => data.path === file.Resolved)?.[1]?.dependencies
+                if(!dependencies) {
+                    const module = this.utils.ast.Parse(fs.readFileSync(file.Resolved, 'utf-8'));
+
+                    dependencies = this.utils.ast.Walk(module, false)
+                    
+                    dependencies = dependencies.map((dependency) => {
+                        const data = this.path.Resolve(file.Resolved, dependency)
+                        return data.Name 
+                    })
+                }
+
+                const stats  = fs.statSync(file.Resolved);
+                const data   = {
+                    "AbsolutePath": file.Resolved, 
+                    "RelativePath": Path.relative(this.dir, file.Resolved),
+                    "FileName"    : Path.basename(file.Resolved),
+                    "Extension"   : Path.extname(file.Resolved).slice(1),
+                    "Size"        : stats.size,
+                    "LastModified": String(stats.mtime),
+                    "Dependencies": dependencies
+                }
+
+                const pattern = new RegExp(
+                    `LBN_METADATA\\s*\\(\\s*${params[0].raw}` +
+                    `\\s*\\)`                                                   
+                );
+
+                src = src.replace(pattern, Bundler.ConstructJson(data))
+        }
+
+        return src; 
+    }
+
     static Clean(raw) {
         return raw.replace(/[^a-zA-Z0-9/.@\\]/g, '')
     }
@@ -134,12 +192,16 @@ class Bundler {
         return raw.replaceAll(`\\`, '/').replace(/\.(lua|luau)$/g, '')
     }
 
-    ConstructArray(value) {
+    static FormatString(str) {
+        return `'${str.replace(/\\/g, "\\\\")}'`
+    }
+
+    static ConstructArray(value) {
         switch(typeof value) {
             case "number":
                 return value 
             case "string":
-                return `'${value}'`
+                return Bundler.FormatString(value)
             case "object": 
                 if(Array.isArray(value)) {
                     const entries = Object.entries(value);
@@ -153,33 +215,45 @@ class Bundler {
                     const entries = Object.entries(value);
 
                     const data    = entries.map(([key, value]) => {
-                        return this.ConstructJson(key, value)
+                        return Bundler.ConstructJson(value)
                     })
 
-                    return `['${key}'] = { ${data.join(',\n\t')} }`
+                    return `{ ${data.join(',')} }`
                 }
         }
     }
 
-    ConstructJson(key, value) {
-        switch(typeof value) {
-            case "number":
-                return `\n\t['${key}'] = ${value},`
-            case "string":
-                return `\n\t['${key}'] = '${value}',`
-            case "object":
-                if(Array.isArray(value)) {
-                    return `['${key}'] = ${this.ConstructArray(value)}`
-                } else {
-                    const entries = Object.entries(value);
+    static ConstructJson(data) {
+        let obj = `{`
 
-                    const data    = entries.map(([key, value]) => {
-                        return this.ConstructJson(key, value)
-                    })
-
-                    return `['${key}'] = { ${data.join(',\n\t')} }`
-                }
+        function Construct(key, value) {
+            switch(typeof value) {
+                case "number":
+                    return `\n\t['${key}'] = ${value},`
+                case "string":
+                    return `\n\t['${key}'] = ${Bundler.FormatString(value)},`
+                case "object":
+                    if(Array.isArray(value)) {
+                        return `['${key}'] = ${Bundler.ConstructArray(value)},`
+                    } else {
+                        const entries = Object.entries(value);
+    
+                        const data    = entries.map(([key, value]) => {
+                            return Construct(key, value)
+                        })
+    
+                        return `\n\t['${key}'] = { ${data.join('\n\t')} },`
+                    }
+            }
         }
+
+        for(const [key, value] of Object.entries(data)) {
+            obj += Construct(key, value)
+        }
+
+        obj += `\n}`
+
+        return obj; 
     }
 
     HandleMacro(node) {
@@ -230,16 +304,12 @@ class Bundler {
                     if(fs.existsSync(resolved) && fs.statSync(resolved).isFile() && Path.extname(resolved) === '.json') {
                         const data = JSON.parse(fs.readFileSync(resolved, 'utf-8')); 
                         
-                        let obj = `{`; 
-                        for(const [key, value] of Object.entries(data)) {
-                            obj += this.ConstructJson(key, value);
-                        }
+                        let obj = Bundler.ConstructJson(data);
+
                         const pattern = new RegExp(
                             `LBN_LOAD_JSON\\s*\\(\\s*${params[0].raw}` +
                             `\\s*\\)`                                                   
                         );
-
-                        obj += '}'
 
                         this.code = this.code.replace(pattern, obj)
                     }
@@ -356,13 +426,20 @@ class Bundler {
             await (new Bundler(Resolved, false, this.args, {old: module, new: Name}, this.dir)).Bundle()
         }
 
-        Bundler.modules.set(this.name.new, this.code);
+        const mod = Bundler.modules.get(this.name.new)
+
+        if(mod) {
+            mod.src = this.code; 
+            mod.dependencies = this.reqs; 
+        } else {
+            Bundler.modules.set(this.name.new, { "src": this.code, "dependencies": this.reqs, "postmacros": [], "path": this.path.path } );
+        }
 
         if(this.root)
             return this.Output()
     }
 
-    Output () {
+    async Output () {
         const ms          = (Date.now() - this.start).toFixed(2);
         const date        = new Date(Date.now());
         const compilation = date.toLocaleString()
@@ -370,8 +447,15 @@ class Bundler {
         let output = fs.readFileSync(`./src/module/code.luau`, 'utf-8'); 
         output = this.CompMacro(output, ms, compilation, this.name['new'])
 
-        for (let [name, src] of Bundler.modules.entries()) {
-            src = this.CompMacro(src, ms, compilation, name)
+        for (let [name, data] of Bundler.modules.entries()) {
+            let src = data.src; 
+            src = this.CompMacro(src, ms, compilation, name)   
+
+            for(const node of data.postmacros) {
+                src = await this.PostMacro(node, src)
+            }
+
+            
             output += `
             LBN_MODULES["${name}"] = function ()
                 ${src}

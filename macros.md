@@ -166,3 +166,75 @@ Output **without `-d` flag**:
 This feature is useful for including debug logs, profiling tools, or development-only code that should not be present in production builds.
 
 ---
+
+### `LBN_METADATA`
+
+* `Return type`: **table**
+* `Information`: retrieves metadata about a file during the bundling process and embeds it directly into the output as a Luau table.
+
+`LBN_METADATA` is a compile-time macro that inspects a file and generates a table containing useful information such as its path, extension, size, modification time, and dependencies. The metadata is collected by the bundler using Node.js file system APIs and expanded directly into the final bundled code.
+
+Parameters:
+
+* `Path`
+
+  * `type`: **string**
+  * `Information`: the relative or absolute path to the file to retrieve metadata for.
+
+Example:
+
+Input:
+
+```lua
+local data = LBN_METADATA("./utils/print.luau")
+```
+
+During bundling, this might expand to something like:
+
+```lua
+local data = {
+	['AbsolutePath'] = 'C:\\Users\\swift\\Desktop\\projects\\node.js\\luaubundler\\example\\utils\\print.luau',
+	['RelativePath'] = 'utils\\print.luau',
+	['FileName'] = 'print.luau',
+	['Extension'] = 'luau',
+	['Size'] = 120,
+	['LastModified'] = 'Tue Mar 31 2026 20:59:18 GMT+0100 (British Summer Time)',
+	['Dependencies'] = {
+		'utils/print'
+	}
+}
+```
+
+Returned fields:
+
+* `AbsolutePath`
+
+  * The absolute path of the file on disk.
+
+* `RelativePath`
+
+  * The path of the file relative to the project directory.
+
+* `FileName`
+
+  * The name of the file including its extension.
+
+* `Extension`
+
+  * The file extension.
+
+* `Size`
+
+  * The size of the file in bytes.
+
+* `LastModified`
+
+  * The timestamp of the last modification of the file.
+
+* `Dependencies`
+
+  * An array containing module identifiers that the file depends on.
+
+This macro is useful for build metadata generation, debugging dependency graphs, or embedding file information directly into the bundled program. Because the metadata is generated during bundling, the final script does not require any runtime file system access.
+
+---
